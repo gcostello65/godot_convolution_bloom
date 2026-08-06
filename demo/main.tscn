@@ -1,11 +1,6 @@
 [gd_scene load_steps=2 format=3]
 
-[sub_resource type="Environment" id="Environment_1"]
+[ext_resource type="Script" path="res://scripts/bloom_test_scene.gd" id="1"]
 
-[node name="Main" type="Node3D"]
-
-[node name="Camera3D" type="Camera3D" parent="."]
-current = true
-
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_1")
+[node name="BloomTestScene" type="Node3D"]
+script = ExtResource("1")

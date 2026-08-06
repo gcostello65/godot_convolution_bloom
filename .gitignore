@@ -17,3 +17,6 @@ demo/bin/*.framework/
 # Godot
 demo/.godot/
 .DS_Store
+
+# IDE
+.idea/

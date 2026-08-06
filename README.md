@@ -29,18 +29,49 @@ This builds against the `godot-cpp` submodule and drops the shared
 library/framework into `demo/bin/`. Use `scons target=template_release` for
 a release build.
 
+## Demo scene
+
+`demo/main.tscn` is a medieval bloom test scene built from the Synty
+POLYGON Knights asset pack — a castle, village, and church laid out by
+Synty's own demo export, plus a flat ground plate, a procedural sky with a
+low warm sun, and a couple of hand-placed brazier/campfire glow accents for
+bright, bloom-worthy highlights. It's built procedurally by
+`demo/scripts/bloom_test_scene.gd`, which also creates a `Compositor` on
+the `WorldEnvironment` with a `BloomGlareEffect` already attached — the
+scene is wired up and ready to visually test bloom the moment the real
+convolution math lands.
+
+Controls at runtime:
+
+| Key | Action |
+| --- | --- |
+| `1`–`4` | Jump to a static viewpoint (castle approach, village square, courtyard hearth, battlement overlook) |
+| `5` | Switch to the cinematic camera, which flies a smooth Catmull-Rom path from a mountain approach down through the castle and into the village, then reverses (ping-pong loop) |
+| `G` | Toggle Godot's built-in glow, for comparison against the custom effect |
+| `B` | Toggle the `BloomGlareEffect` compositor effect on/off |
+
+For a three-way comparison (stock bloom vs. `BloomGlareEffect` vs. neither),
+flip the `use_builtin_glow` export on the scene root's script (or in the
+Inspector) to set which one is on by default at start — `G`/`B` still work
+at runtime on top of whatever it's set to.
+
+**Asset note:** the Synty POLYGON Knights source files live under
+`demo/assets/synty_knights/` and are copied in from a paid Synty Store
+asset pack, not authored in this repo. Confirm your Synty license covers
+redistributing the raw source files before pushing this folder to a public
+remote — see the note below on `.gitignore`-ing it if you'd rather keep
+them local-only.
+
 ## Verify
 
 1. Open `demo/` as a project in Godot **4.3+** (developed against 4.6.3).
 2. Confirm the Output panel shows no missing-symbol or failed-extension-load
-   errors on startup.
-3. In the `main.tscn` scene, select the `WorldEnvironment` node, open its
-   `Environment` resource, and add a `Compositor` resource under
-   `Rendering > Compositor`. Add a `BloomGlareEffect` entry to the
-   Compositor's `compositor_effects` array — confirm `BloomGlareEffect` and
-   `PSFProvider` both appear as selectable resource types in the Inspector.
-4. Run the scene (F6). Confirm `BloomGlareEffect render callback fired,
-   frame N` prints to the log periodically (every 60 frames) with no crash.
+   errors on startup, and that `BloomGlareEffect` / `PSFProvider` appear as
+   selectable resource types in the Inspector.
+3. Run the scene (F6). Confirm `BloomGlareEffect render callback fired,
+   frame N` prints to the log periodically (every 60 frames) with no crash,
+   and that the medieval scene renders with the castle, village, ground,
+   and sky all in place.
 
 No visual bloom is expected yet — success is "loads, registers, callback
 fires, no crash," per `docs/project_outline.md`.
