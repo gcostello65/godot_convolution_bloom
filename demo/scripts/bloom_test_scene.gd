@@ -61,7 +61,7 @@ func _ready() -> void:
     _setup_cameras()
     _setup_compositor()
     _setup_ui()
-    _viewpoint_cameras[0].current = true
+    _rail_camera.current = true
 
 
 func _process(delta: float) -> void:
