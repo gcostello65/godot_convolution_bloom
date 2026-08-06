@@ -1,0 +1,19 @@
+# SCons
+.sconsign.dblite
+.scons_cache/
+compile_commands.json
+src/**/*.os
+src/**/*.o
+
+# Build output
+demo/bin/*.o
+demo/bin/*.os
+demo/bin/*.a
+demo/bin/*.so
+demo/bin/*.dll
+demo/bin/*.dylib
+demo/bin/*.framework/
+
+# Godot
+demo/.godot/
+.DS_Store
