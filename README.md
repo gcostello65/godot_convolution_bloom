@@ -46,7 +46,8 @@ Controls at runtime:
 | Key | Action |
 | --- | --- |
 | `1`–`4` | Jump to a static viewpoint (castle approach, village square, courtyard hearth, battlement overlook) |
-| `5` | Switch to the cinematic camera, which flies a smooth Catmull-Rom path from a mountain approach down through the castle and into the village, then reverses (ping-pong loop) |
+| `5` | Switch to the cinematic camera, which flies a smooth Catmull-Rom path from a mountain approach down through the castle and into the village, then reverses (ping-pong loop). This is the default camera on scene start. |
+| `6` | Switch to a free-fly camera you control: WASD to move, mouse to look (captures the cursor), `Shift` to sprint, `Q`/`E` for down/up, `Esc` to release the cursor |
 | `G` | Toggle Godot's built-in glow, for comparison against the custom effect |
 | `B` | Toggle the `BloomGlareEffect` compositor effect on/off |
 
@@ -54,6 +55,13 @@ For a three-way comparison (stock bloom vs. `BloomGlareEffect` vs. neither),
 flip the `use_builtin_glow` export on the scene root's script (or in the
 Inspector) to set which one is on by default at start — `G`/`B` still work
 at runtime on top of whatever it's set to.
+
+**Placeholder effect note:** `BloomGlareEffect` has no real bloom math yet
+(see the `// TODO` in `bloom_glare_effect.cpp`) — with it enabled (the
+default), it currently flashes the whole frame through a loud color palette
+every 30 frames, purely so the extension's render callback and on/off
+toggle (`B`) are trivially verifiable end-to-end. It replaces the real
+composite once the convolution pipeline is implemented.
 
 **Asset note:** the Synty POLYGON Knights source files live under
 `demo/assets/synty_knights/` and are copied in from a paid Synty Store

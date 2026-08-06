@@ -46,10 +46,18 @@ const RAIL_POINTS := [
 const RAIL_DURATION := 32.0
 const RAIL_LOOKAHEAD := 4.0
 
+const FREE_CAM_SPEED := 12.0
+const FREE_CAM_SPRINT_MULT := 3.0
+const FREE_CAM_MOUSE_SENSITIVITY := 0.0025
+
 var _viewpoint_cameras: Array[Camera3D] = []
 var _rail_camera: Camera3D
 var _rail_curve: Curve3D
 var _rail_time := 0.0
+
+var _free_camera: Camera3D
+var _free_cam_yaw := 0.0
+var _free_cam_pitch := 0.0
 
 var _world_environment: WorldEnvironment
 var _bloom_effect: BloomGlareEffect
@@ -70,21 +78,67 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_update_rail_camera(delta)
+	if _free_camera != null and _free_camera.current:
+		_update_free_camera(delta)
+
+
+func _update_free_camera(delta: float) -> void:
+	var basis := _free_camera.global_transform.basis
+	var move := Vector3.ZERO
+	if Input.is_key_pressed(KEY_W):
+		move -= basis.z
+	if Input.is_key_pressed(KEY_S):
+		move += basis.z
+	if Input.is_key_pressed(KEY_A):
+		move -= basis.x
+	if Input.is_key_pressed(KEY_D):
+		move += basis.x
+	if Input.is_key_pressed(KEY_E):
+		move += Vector3.UP
+	if Input.is_key_pressed(KEY_Q):
+		move -= Vector3.UP
+
+	if move.length() > 0.0:
+		move = move.normalized()
+
+	var speed := FREE_CAM_SPEED
+	if Input.is_key_pressed(KEY_SHIFT):
+		speed *= FREE_CAM_SPRINT_MULT
+
+	_free_camera.global_position += move * speed * delta
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventMouseMotion and _free_camera != null and _free_camera.current \
+			and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+		_free_cam_yaw -= event.relative.x * FREE_CAM_MOUSE_SENSITIVITY
+		_free_cam_pitch -= event.relative.y * FREE_CAM_MOUSE_SENSITIVITY
+		_free_cam_pitch = clamp(_free_cam_pitch, deg_to_rad(-89.0), deg_to_rad(89.0))
+		_free_camera.rotation = Vector3(_free_cam_pitch, _free_cam_yaw, 0.0)
+		return
+
 	if event is InputEventKey and event.pressed and not event.echo:
 		match event.keycode:
 			KEY_1:
 				_viewpoint_cameras[0].current = true
+				Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 			KEY_2:
 				_viewpoint_cameras[1].current = true
+				Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 			KEY_3:
 				_viewpoint_cameras[2].current = true
+				Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 			KEY_4:
 				_viewpoint_cameras[3].current = true
+				Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 			KEY_5:
 				_rail_camera.current = true
+				Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+			KEY_6:
+				_free_camera.current = true
+				Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+			KEY_ESCAPE:
+				Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 			KEY_G:
 				_world_environment.environment.glow_enabled = not _world_environment.environment.glow_enabled
 			KEY_B:
@@ -320,6 +374,15 @@ func _setup_cameras() -> void:
 	_build_smooth_curve(_rail_curve, RAIL_POINTS)
 	_rail_camera.global_position = RAIL_POINTS[0]
 
+	_free_camera = Camera3D.new()
+	_free_camera.name = "FreeCamera"
+	_free_camera.fov = 70.0
+	add_child(_free_camera)
+	_free_camera.global_position = VIEWPOINTS[0]["pos"]
+	_free_camera.look_at(VIEWPOINTS[0]["look_at"], Vector3.UP)
+	_free_cam_yaw = _free_camera.rotation.y
+	_free_cam_pitch = _free_camera.rotation.x
+
 
 func _update_rail_camera(delta: float) -> void:
 	if _rail_curve == null or _rail_curve.point_count < 2:
@@ -361,7 +424,7 @@ func _setup_ui() -> void:
 	add_child(layer)
 
 	var label := Label.new()
-	label.text = "1-4: Viewpoints   5: Cinematic rail camera   G: toggle built-in glow   B: toggle BloomGlareEffect"
+	label.text = "1-4: Viewpoints   5: Cinematic rail camera   6: Free camera (WASD+mouse, Shift sprint, Q/E up/down, Esc releases mouse)   G: toggle built-in glow   B: toggle BloomGlareEffect"
 	label.position = Vector2(16.0, 16.0)
 	label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
 	label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0))
